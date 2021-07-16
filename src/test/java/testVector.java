@@ -42,7 +42,7 @@ public class testVector {
             System.out.println(ex.getMessage());
         } // test save & load vocabulary by the way
 
-        int[] controlVector = {1,1,0,1,1,0,0,1,0};
+        double[] controlVector = {1,1,0,1,1,0,0,1,0};
 
         assertEquals(true, Arrays.equals(controlVector
         ,Vector.getTextAsVector(new ClassifiableText

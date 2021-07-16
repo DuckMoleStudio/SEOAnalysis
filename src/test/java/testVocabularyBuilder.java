@@ -10,9 +10,54 @@ import static org.junit.Assert.assertEquals;
 public class testVocabularyBuilder {
 
     @Test
-    public void testVocabularyBuilderSimple(){
+    public void testVocabularyBuilderStreamAPISimple(){
         NGramStrategy nGramStrategy = new FilteredUnigram();
-        VocabularyBuilder vocabularyBuilder = new VocabularyBuildStreamAPI(nGramStrategy); //StringAPI method
+        VocabularyBuilder vocabularyBuilder = new VocabularyBuildStreamAPI(nGramStrategy);
+        doTestVocabularyBuilderSimple(vocabularyBuilder);
+    }
+
+    @Test
+    public void testVocabularyBuilderTraditionalSimple(){
+        NGramStrategy nGramStrategy = new FilteredUnigram();
+        VocabularyBuilder vocabularyBuilder = new VocabularyBuildTraditional(nGramStrategy);
+        doTestVocabularyBuilderSimple(vocabularyBuilder);
+    }
+
+    @Test
+    public void testVocabularyBuilderXLSStringAPI() {
+        doTestVocabularyBuilderXLSStringAPI(new VocabularyBuildStreamAPI(new FilteredUnigram()));
+    }
+
+    @Test
+    public void testVocabularyBuilderXLSTraditional(){
+        doTestVocabularyBuilderXLSStringAPI(new VocabularyBuildTraditional(new FilteredUnigram()));
+    }
+
+    @Test
+    public void testVocabularyBuilderPerformanceStringAPI(){
+        doTestVocabularyBuilder(new VocabularyBuildStreamAPI(new FilteredUnigram()));
+    }
+
+
+    @Test
+    public void testVocabularyBuilderPerformanceTraditional(){
+        doTestVocabularyBuilder(new VocabularyBuildTraditional(new FilteredUnigram()));
+    }
+
+    private void doTestVocabularyBuilderSimple(VocabularyBuilder vocabularyBuilder) {
+        List<ClassifiableText> requestList = getClassifiableTexts();
+
+        assertEquals("[ford, был, в, вагон, важн, вал, всегд, не, что]",
+                vocabularyBuilder.createVocabulary(requestList,1)
+                        .toString());
+
+        assertEquals("[ford, вагон, важн, не]",
+                vocabularyBuilder.createVocabulary(requestList,2)
+                        .toString());
+
+    }
+
+    private List<ClassifiableText> getClassifiableTexts() {
         List<ClassifiableText> requestList = new ArrayList<>();
 
         requestList.add(new ClassifiableText
@@ -30,30 +75,11 @@ public class testVocabularyBuilder {
         requestList.add(new ClassifiableText
                 ("Важнее вагонов ford никогда ничего не было и не будет!"
                         ,"brand",0.5));
-
-        assertEquals("[ford, был, в, вагон, важн, вал, всегд, не, что]",
-               vocabularyBuilder.createVocabulary(requestList,1)
-                        .toString());
-
-        assertEquals("[ford, вагон, важн, не]",
-                vocabularyBuilder.createVocabulary(requestList,2)
-                        .toString());
-
-        vocabularyBuilder = new VocabularyBuildTraditional(nGramStrategy); // Traditional method
-
-        assertEquals("[ford, был, в, вагон, важн, вал, всегд, не, что]",
-                vocabularyBuilder.createVocabulary(requestList,1)
-                        .toString());
-
-        assertEquals("[ford, вагон, важн, не]",
-                vocabularyBuilder.createVocabulary(requestList,2)
-                        .toString());
+        return requestList;
     }
 
-    @Test
-    public void testVocabularyBuilderXLSStringAPI(){
+    private void doTestVocabularyBuilderXLSStringAPI(VocabularyBuilder vocabularyBuilder) {
         NGramStrategy nGramStrategy = new FilteredUnigram();
-        VocabularyBuilder vocabularyBuilder = new VocabularyBuildStreamAPI(nGramStrategy); //StringAPI method
 
         List<ClassifiableText> requestList = new ArrayList<>();
 
@@ -90,81 +116,14 @@ public class testVocabularyBuilder {
 
     }
 
-    @Test
-    public void testVocabularyBuilderXLSTraditional(){
-        NGramStrategy nGramStrategy = new FilteredUnigram();
-        VocabularyBuilder vocabularyBuilder = new VocabularyBuildTraditional(nGramStrategy); //Traditional method
-
-        List<ClassifiableText> requestList = new ArrayList<>();
-
-        try {requestList = FileManager
-                .loadRequestXLS("C:\\Users\\User\\Documents\\icom0521-1.xls");}
-        catch(IOException ex){
-            System.out.println(ex.getMessage());
-        }
-        assertEquals(344,
-                vocabularyBuilder.createVocabulary(requestList,0)
-                        .size());
-
-        assertEquals(144,
-                vocabularyBuilder.createVocabulary(requestList,1)
-                        .size());
-
-        assertEquals(89,
-                vocabularyBuilder.createVocabulary(requestList,2)
-                        .size());
-
-        assertEquals(62,
-                vocabularyBuilder.createVocabulary(requestList,3)
-                        .size());
-
-        assertEquals(55,
-                vocabularyBuilder.createVocabulary(requestList,4)
-                        .size());
-
-        assertEquals(48,
-                vocabularyBuilder.createVocabulary(requestList,5)
-                        .size());
-
-    }
-
-    @Test
-    public void testVocabularyBuilderPerformanceStringAPI(){
-        NGramStrategy nGramStrategy = new FilteredUnigram();
-        VocabularyBuilder vocabularyBuilder = new VocabularyBuildStreamAPI(nGramStrategy); //StringAPI method
-
-        List<ClassifiableText> requestList = new ArrayList<>();
-
-        try {requestList = FileManager
-                .loadRequestXLS("C:\\Users\\User\\Documents\\icom0521-1.xls");}
-        catch(IOException ex){
-            System.out.println(ex.getMessage());
-        }
-
+    private void doTestVocabularyBuilder(VocabularyBuilder vocabularyBuilder) {
+        List<ClassifiableText> requestList = getClassifiableTexts();
         long timeStart = System.currentTimeMillis();
-        for(int ii=0;ii<1000;ii++){
+        for(int ii=0; ii < 10000; ii++ ) {
             vocabularyBuilder.createVocabulary(requestList,1);
         }
-        System.out.println("Elapsed time: " + (System.currentTimeMillis()-timeStart));
+        System.out.println(vocabularyBuilder.getClass().getName() + ": Elapsed time: " +
+                (System.currentTimeMillis()-timeStart));
     }
 
-    @Test
-    public void testVocabularyBuilderPerformanceTraditional(){
-        NGramStrategy nGramStrategy = new FilteredUnigram();
-        VocabularyBuilder vocabularyBuilder = new VocabularyBuildTraditional(nGramStrategy); //Traditional method
-
-        List<ClassifiableText> requestList = new ArrayList<>();
-
-        try {requestList = FileManager
-                .loadRequestXLS("C:\\Users\\User\\Documents\\icom0521-1.xls");}
-        catch(IOException ex){
-            System.out.println(ex.getMessage());
-        }
-
-        long timeStart = System.currentTimeMillis();
-        for(int ii=0;ii<1000;ii++){
-            vocabularyBuilder.createVocabulary(requestList,1);
-        }
-        System.out.println("Elapsed time: " + (System.currentTimeMillis()-timeStart));
-    }
 }

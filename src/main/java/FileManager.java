@@ -5,10 +5,7 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -64,6 +61,39 @@ public class FileManager {
                     ,row.getCell(2).getNumericCellValue()));
         }
         return (requestList);
+    }
+
+    public static void saveRequestXLS(String fileName, List<ClassifiableText> requestList)
+            throws IOException { // save NN result to XLS
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        HSSFSheet sheet = workbook.createSheet("Оценка нейросети");
+
+        int rownum = 0;
+        Cell cell;
+        Row row;
+
+        for (ClassifiableText request : requestList) {
+
+            row = sheet.createRow(rownum);
+            rownum++;
+
+            // request text
+            cell = row.createCell(0, CellType.STRING);
+            cell.setCellValue(request.getText());
+            // request type
+            cell = row.createCell(1, CellType.STRING);
+            cell.setCellValue(request.getClassification());
+            // request evaluated quality
+            cell = row.createCell(2, CellType.NUMERIC);
+            cell.setCellValue(request.getQuality());
+
+        }
+        File file = new File(fileName);
+        file.getParentFile().mkdirs();
+
+        FileOutputStream outFile = new FileOutputStream(file);
+        workbook.write(outFile);
+        System.out.println("Created file: " + file.getAbsolutePath());
     }
 
     public static void loadRequestXLSsource(String fileName) throws IOException { // initial source example 4 reference

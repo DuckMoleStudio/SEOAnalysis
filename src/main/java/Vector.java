@@ -2,9 +2,9 @@ import java.util.List;
 import java.util.Set;
 
 public class Vector {
-    static int[] getTextAsVector(ClassifiableText classifiableText
+    static double[] getTextAsVector(ClassifiableText classifiableText
             , List<String> vocabulary, NGramStrategy nGramStrategy) {
-        int[] vector = new int[vocabulary.size()];
+        double[] vector = new double[vocabulary.size()];
 
         // convert text to nGram
         Set<String> uniqueValues = nGramStrategy.getNGram(classifiableText.getText());
